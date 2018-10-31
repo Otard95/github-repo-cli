@@ -31,7 +31,7 @@ class CreateRepo {
 
     if (!user.username && !user.password) {
       this.questions.unshift(
-        new Question('username', 'Username*:'),
+        new Question('username', 'Username*:', null, false),
         new Question('password', 'Password*:', null, false, undefined, true),
         new Question('save', 'Save auth locally? (y/n):', 'n', false, ['y', 'n'])
       );
