@@ -4,6 +4,7 @@ const fs       = require('fs');
 const path     = require('path');
 const Question = require('./Question');
 const user     = require('./user.json');
+const ignoretemplates = require('./gitignoretemplates.json').templates;
 
 class CreateRepo {
   
@@ -24,7 +25,8 @@ class CreateRepo {
     this.questions = [
       new Question('name', `Repository name (${sugested_name})*:`, sugested_name),
       new Question('description', 'Desctiption:', null, true),
-      new Question('license_template', `License (e.g. MIT):`, null, true, ['MIT'])
+      new Question('license_template', `License (e.g. MIT):`, null, true, ['MIT']),
+      new Question('gitignore_template', `Gitignore (None):`, null, true, ignoretemplates)
     ];
 
     if (!user.username && !user.password) {
@@ -132,6 +134,7 @@ class CreateRepo {
   
   processAnswers() {
     let json_data = {};
+    
     this.questions.forEach(q => {
       if (q.answer)
         json_data[q.property_name] = q.answer;

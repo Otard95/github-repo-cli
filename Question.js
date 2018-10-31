@@ -9,7 +9,7 @@ class Quaestion {
     this.optional = optional;
     this.hide_input = hide_input;
     
-    this.accepted_answers = Array.isArray(accepted_answers) ? accepted_answers : undefined ;
+    this.accepted_answers = Array.isArray(accepted_answers) ? accepted_answers : undefined;
   }
   
   verityAnswer(answer) {
