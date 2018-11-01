@@ -1,7 +1,7 @@
 
 class Quaestion {
   
-  constructor (property_name, query, deafult_answer, optional = false, accepted_answers, hide_input = false) {
+  constructor (property_name, query, deafult_answer, optional = false, accepted_answers, hide_input = false, predict = false) {
     
     this.property_name = property_name;
     this.query = query;
@@ -10,6 +10,8 @@ class Quaestion {
     this.hide_input = hide_input;
     
     this.accepted_answers = Array.isArray(accepted_answers) ? accepted_answers : undefined;
+    this.predict = predict;
+    
   }
   
   verityAnswer(answer) {

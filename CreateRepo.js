@@ -1,9 +1,10 @@
-const request  = require('request');
-const readline = require('readline');
-const fs       = require('fs');
-const path     = require('path');
-const Question = require('./Question');
-const user     = require('./user.json');
+const request   = require('request');
+const readline  = require('readline');
+const fs        = require('fs');
+const path      = require('path');
+const colors    = require('colors');
+const Question  = require('./Question');
+const user      = require('./user.json');
 const templates = require('./templates.json');
 
 class CreateRepo {
@@ -20,13 +21,13 @@ class CreateRepo {
     this.rl.stdoutMuted = false;
 
     const cwd = process.cwd();
-    const sugested_name = cwd.substr(cwd.lastIndexOf('\\') + 1, cwd.length);
+    const sugested_name = cwd.substring(cwd.lastIndexOf('\\') + 1, cwd.length);
 
     this.questions = [
       new Question('name', `Repository name (${sugested_name})*:`, sugested_name),
       new Question('description', 'Desctiption:', null, true),
-      new Question('license_template', `License (e.g. MIT):`, null, true, templates.licence),
-      new Question('gitignore_template', `Gitignore (None):`, null, true, templates.gitignore)
+      new Question('license_template', `License (e.g. MIT):`, null, true, templates.licence, false, true),
+      new Question('gitignore_template', `Gitignore (None):`, null, true, templates.gitignore, false, true)
     ];
 
     if (!user.username && !user.password) {
@@ -39,14 +40,34 @@ class CreateRepo {
 
     this.question_index = 0;
     
+    let self = this;
+    
+    rl.currentAnswer = '';
     this.rl._writeToOutput = function _writeToOutput(stringToWrite) {
+      
+      if (stringToWrite == '\r\n') {
+        rl.output.write(stringToWrite);
+        return;
+      }
+      
+      if (stringToWrite.length === 1) rl.currentAnswer += stringToWrite;
+      else                            rl.currentAnswer =  stringToWrite.substring(3);
+      
       if (rl.stdoutMuted && stringToWrite.length === 1)
         rl.output.write("*");
       else if (rl.stdoutMuted && stringToWrite.length > 1) {
-        let str = stringToWrite.substr(0, 3) + new Array(stringToWrite.length - 2).join('*');
+        let str = stringToWrite.substring(0, 3) + new Array(stringToWrite.length - 2).join('*');
         rl.output.write(str);
+      } else if(rl.predict) {
+        let match = self.bestMatchIn(rl.currentAnswer, rl.predict);
+        if (match)
+          rl.output.write(stringToWrite + match.substring(rl.currentAnswer.length).gray + '               ');
+        else
+          rl.output.write(stringToWrite + '                  ');
+        rl.output.cursorTo(rl.currentAnswer.length+3);
       } else
         rl.output.write(stringToWrite);
+      
     };
 
   }
@@ -119,9 +140,12 @@ class CreateRepo {
         });
 
       } else {
-        console.log(this.questions[this.question_index].query);
+        this.rl.predict = undefined;
+        let q = this.questions[this.question_index]
+        console.log(q.query);
         this.rl.prompt();
-        this.rl.stdoutMuted = this.questions[this.question_index].hide_input;
+        this.rl.stdoutMuted = q.hide_input;
+        this.rl.predict = q.predict ? q.accepted_answers : undefined;
       }
 
     })
@@ -152,6 +176,16 @@ class CreateRepo {
 
     console.log('Authentication credentials saved!');
 
+  }
+  
+  bestMatchIn(query, set) {
+    
+    if (query === '') return;
+    for (let word of set) {
+      if (word.startsWith(query))
+        return word;
+    }
+    
   }
   
 }
